@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -27,13 +28,16 @@ namespace RentSpace.Controllers
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
-        public ActionResult Get(int id)
+        public ActionResult Get()
         {
 
-            User user = new User();
-            user = appDb.User.FirstOrDefault(u => u.Id == id);
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+            var userEmail = claimsIdentity.FindFirst(ClaimTypes.Name).Value;
+
+            User user = appDb.User.FirstOrDefault(u => u.Email == userEmail); 
             user.Password = null;
-            return BadRequest(user);
+            user.Token = null;
+            return Ok(user);
         }
 
         [HttpPost]
@@ -48,10 +52,10 @@ namespace RentSpace.Controllers
 
             user.Password = PasswordHandler.Encrypt(user.Password, "sblw-3hn8-sqoy19");
             string token = authService.Authenticate(user.Email);
-            user.Token = token;
             appDb.User.Add(user);
             //string token = authService.Authenticate(user.Email);
             appDb.SaveChanges();
+            user.Token = token;
             user.Password = null;
             return Ok(user);
         }

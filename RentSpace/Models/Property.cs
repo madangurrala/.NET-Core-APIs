@@ -17,7 +17,7 @@ namespace RentSpace.Models
         public string Status { get; set; }
         public int UserId { get; set; }
         public string User { get; set; }
-        public string RegisterDate { get; set; }
+        public long RegisterDate { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; }
         public string Address { get; set; }

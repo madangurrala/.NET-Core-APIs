@@ -12,7 +12,7 @@ using RentSpace.Services;
 
 namespace RentSpace.Controllers
 {
-    
+
     [Route("[controller]")]
     [ApiController]
     public class PropertyController : ControllerBase
@@ -31,14 +31,27 @@ namespace RentSpace.Controllers
             List<Property> properties = new List<Property>();
             var propertiesFromDb = appDbContext.Property.ToList();
 
-            if(propertiesFromDb.Count <= 0)
+            if (propertiesFromDb.Count <= 0)
             {
-                return BadRequest(new { message = "There are no properties to display"});
+                return BadRequest(new { message = "There are no properties to display" });
             }
 
             return Ok(propertiesFromDb);
+        }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("{id}")]
+        public ActionResult GetProperty(int id)
+        {
 
+            Property property = appDbContext.Property.FirstOrDefault(p => p.Id == id);
+
+            if (property == null)
+            {
+                return BadRequest(new { message = "Please enter a valid property Id" });
+            }
+
+            return Ok(property);
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -56,11 +69,11 @@ namespace RentSpace.Controllers
                 return BadRequest(new { message = "User is not logged in" });
             }
 
-            property.RegisterDate = DateTime.Now.ToString();
+            property.RegisterDate = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             property.UserId = user.Id;
             property.User = user.Name;
             property.Status = Static.PropertyPosted;
-            property.UserObject.Password = null;
+            property.UserObject = null;
             appDbContext.Property.Add(property);
             appDbContext.SaveChanges();
             return Ok(property);

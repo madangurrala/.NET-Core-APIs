@@ -40,6 +40,20 @@ namespace RentSpace.Controllers
             return Ok(user);
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("{id}")]
+        public ActionResult GetUserProfile(int id)
+        {
+            User user = appDb.User.FirstOrDefault(u => u.Id == id);
+            if (user == null )
+            {
+                return BadRequest(new { message = "This user doesn't exist" });
+            }
+            user.Password = null;
+            user.Token = null;
+            return Ok(user);
+        }
+
         [HttpPost]
         public IActionResult Post(User user)
         {
@@ -58,6 +72,27 @@ namespace RentSpace.Controllers
             user.Token = token;
             user.Password = null;
             return Ok(user);
+        }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPut]
+        public ActionResult UpdateProfile(User user)
+        {
+
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+            var userEmail = claimsIdentity.FindFirst(ClaimTypes.Name).Value;
+
+            User userFromDb = appDb.User.FirstOrDefault(u => u.Email == userEmail);
+
+            userFromDb.Name = user.Name;
+            userFromDb.Family = user.Family;
+            userFromDb.Photo = user.Photo;
+            userFromDb.Phone = user.Phone;
+            userFromDb.Email = userEmail;
+            appDb.SaveChanges();
+            user.Password = null;
+            user.Token = null;
+            return Ok(userFromDb);
         }
     }
 }

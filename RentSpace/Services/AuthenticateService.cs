@@ -31,7 +31,7 @@ namespace RentSpace.Services
                     new Claim(ClaimTypes.Email, "Admin"),
                     new Claim(ClaimTypes.Version, "V3.1")
                 }),
-                Expires = DateTime.UtcNow.AddDays(4),
+                Expires = DateTime.UtcNow.AddDays(2),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 

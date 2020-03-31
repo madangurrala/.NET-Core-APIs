@@ -12,9 +12,9 @@ namespace RentSpace.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(nullable: true),
+                    Name = table.Column<string>(nullable: false),
                     Family = table.Column<string>(nullable: true),
-                    Email = table.Column<string>(nullable: true),
+                    Email = table.Column<string>(nullable: false),
                     Password = table.Column<string>(nullable: true),
                     Phone = table.Column<string>(nullable: true),
                     Photo = table.Column<string>(nullable: true)

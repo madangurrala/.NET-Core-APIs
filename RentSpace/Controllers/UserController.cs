@@ -90,8 +90,8 @@ namespace RentSpace.Controllers
             userFromDb.Phone = user.Phone;
             userFromDb.Email = userEmail;
             appDb.SaveChanges();
-            user.Password = null;
-            user.Token = null;
+            userFromDb.Password = null;
+            userFromDb.Token = null;
             return Ok(userFromDb);
         }
     }

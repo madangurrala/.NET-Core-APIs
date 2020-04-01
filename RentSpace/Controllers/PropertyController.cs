@@ -58,13 +58,13 @@ namespace RentSpace.Controllers
         [HttpPost]
         public ActionResult Post(Property property)
         {
-;
+            ;
             var claimsIdentity = (ClaimsIdentity)User.Identity;
             var userEmail = claimsIdentity.FindFirst(ClaimTypes.Name).Value;
 
             User user = appDbContext.User.FirstOrDefault(u => u.Email == userEmail);
 
-            if(user == null)
+            if (user == null)
             {
                 return BadRequest(new { message = "User is not logged in" });
             }
@@ -73,11 +73,54 @@ namespace RentSpace.Controllers
             property.UserId = user.Id;
             property.User = user.Name;
             property.Status = Static.PropertyPosted;
-            property.UserObject = null;
             appDbContext.Property.Add(property);
             appDbContext.SaveChanges();
+            property.UserObject = null;
             return Ok(property);
-            
+
+        }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPut("{id}")]
+        public ActionResult UpdateProperty(Property property, int id)
+        {
+            ;
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+            var userEmail = claimsIdentity.FindFirst(ClaimTypes.Name).Value;
+
+            User user = appDbContext.User.FirstOrDefault(u => u.Email == userEmail);
+
+            if (user == null)
+            {
+                return BadRequest(new { message = "User is not logged in" });
+            }
+
+            var propertyFromDb = appDbContext.Property.FirstOrDefault(p => p.Id == id && p.UserId == user.Id);
+
+            if(propertyFromDb == null)
+            {
+                return BadRequest(new { message = "The property doesn't exist/The given property is not posted by you" });
+            }
+
+            propertyFromDb.RegisterDate = propertyFromDb.RegisterDate;
+            propertyFromDb.UserId = propertyFromDb.UserId;
+            propertyFromDb.User = propertyFromDb.User;
+            propertyFromDb.Status = property.Status;
+            propertyFromDb.BigImagePath = property.BigImagePath;
+            propertyFromDb.SmallImagePath = property.SmallImagePath;
+            propertyFromDb.ShortDescription = property.ShortDescription;
+            propertyFromDb.LongDescription = property.LongDescription;
+            propertyFromDb.Latitude = property.Latitude;
+            propertyFromDb.Longitude = property.Longitude;
+            propertyFromDb.Address = property.Address;
+            propertyFromDb.City = property.City;
+            propertyFromDb.Size = property.Size;
+            propertyFromDb.Price = property.Price;
+            propertyFromDb.Rate = property.Rate;
+            appDbContext.SaveChanges();
+            propertyFromDb.UserObject = null;
+            return Ok(propertyFromDb);
+
         }
 
 

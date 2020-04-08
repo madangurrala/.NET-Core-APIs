@@ -14,8 +14,14 @@ namespace RentSpace.Models
         public string PeerTitle { get; set; }
         public long RegisterDate { get; set; }
         public long AppointmentDate { get; set; }
+        public int PropertyId { get; set; }
+        public string Status { get; set; }
 
         [ForeignKey("UserId")]
         public User User { get; set; }
+
+        [ForeignKey("PropertyId")]
+        public Property Property { get; set; }
+
     }
 }

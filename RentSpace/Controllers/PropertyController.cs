@@ -29,8 +29,8 @@ namespace RentSpace.Controllers
         public ActionResult Get()
         {
             List<Property> properties = new List<Property>();
-            var propertiesFromDb = appDbContext.Property.ToList();
-
+            var propertiesFromDb = appDbContext.Property.Where(p => p.Status == Static.PropertyPosted).ToList();
+            
             if (propertiesFromDb.Count <= 0)
             {
                 return BadRequest(new { message = "There are no properties to display" });
@@ -105,7 +105,11 @@ namespace RentSpace.Controllers
             propertyFromDb.RegisterDate = propertyFromDb.RegisterDate;
             propertyFromDb.UserId = propertyFromDb.UserId;
             propertyFromDb.User = propertyFromDb.User;
-            propertyFromDb.Status = property.Status;
+            if(property.Status == Static.PopertyRented)
+            {
+                propertyFromDb.Status = Static.PopertyRented;
+            }
+            propertyFromDb.Status = propertyFromDb.Status;
             propertyFromDb.BigImagePath = property.BigImagePath;
             propertyFromDb.SmallImagePath = property.SmallImagePath;
             propertyFromDb.ShortDescription = property.ShortDescription;

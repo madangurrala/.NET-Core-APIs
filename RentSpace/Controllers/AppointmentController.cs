@@ -6,6 +6,7 @@ using System.Linq;
 using RentSpace.Models;
 using System.Security.Claims;
 using System.Collections.Generic;
+using RentSpace.Services;
 
 namespace RentSpace.Controllers
 {
@@ -30,7 +31,14 @@ namespace RentSpace.Controllers
             User user = appDbContext.User.FirstOrDefault(u => u.Email == userEmail);
 
             List<Appointment> appointmentList = new List<Appointment>();
-            appointmentList = appDbContext.Appointment.Where(u => u.UserId == user.Id).ToList();
+            appointmentList = appDbContext.Appointment
+                .Where(u => u.UserId == user.Id && u.Status != Static.AptStatusRejected).ToList();
+            var appointmentReqList = appDbContext.Appointment.Where(u => u.PeerId == user.Id).ToList();
+
+            foreach(var apt in appointmentReqList)
+            {
+                appointmentList.Add(apt);
+            }            
 
             if (appointmentList.Count <= 0)
             {
@@ -71,9 +79,9 @@ namespace RentSpace.Controllers
             List<Appointment> appointmentList = new List<Appointment>();
             appointmentList = appDbContext.Appointment.Where(u => u.PeerId == user.Id).ToList();
 
-            if(appointmentList.Count <= 0)
+            if (appointmentList.Count <= 0)
             {
-                return BadRequest(new {message = "There are no appointments booked with you" });
+                return BadRequest(new { message = "There are no appointments booked with you" });
             }
 
             return Ok(appointmentList);
@@ -89,7 +97,7 @@ namespace RentSpace.Controllers
 
             User user = appDbContext.User.FirstOrDefault(u => u.Email == userEmail);
 
-           var appointment = appDbContext.Appointment.FirstOrDefault(a => a.Id == id && a.PeerId == user.Id );
+            var appointment = appDbContext.Appointment.FirstOrDefault(a => a.Id == id && a.PeerId == user.Id);
 
             if (appointment == null)
             {
@@ -114,21 +122,72 @@ namespace RentSpace.Controllers
                 return BadRequest(new { message = "User is not logged in" });
             }
 
-            var peerUser = appDbContext.User.FirstOrDefault(u => u.Id == appointment.PeerId);
+            var property = appDbContext.Property.FirstOrDefault(p => p.Id == appointment.PropertyId);
 
-            if(peerUser == null)
+            if (property == null)
             {
-                return BadRequest(new { message = "The peer user doesn't exist" });
+                return BadRequest(new { message = "The property Id doesn't exist" });
             }
 
-            appointment.PeerTitle = peerUser.Name;
+
+            var propertyOwnerAptCheck = appDbContext.Property
+                .FirstOrDefault(p => p.Id == property.Id && p.UserId == user.Id);
+
+            if (propertyOwnerAptCheck != null)
+            {
+                return BadRequest(new { message = "You can not book appointment for the property you have posted" });
+            }
+
+            var propertyAppointment = appDbContext.Appointment
+                .FirstOrDefault(a => a.UserId == user.Id && a.PropertyId == appointment.PropertyId);
+
+
+            if (propertyAppointment != null)
+            {
+                return BadRequest(new { message = "You have already booked an appointment for this property" });
+            }
+
+            appointment.PeerId = property.UserId;
+            appointment.PeerTitle = property.User;
             appointment.RegisterDate = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             appointment.UserId = user.Id;
+            appointment.Status = Static.AptStatusRequested;
             appDbContext.Add(appointment);
             appDbContext.SaveChanges();
+            appointment.Property = null;
+            appointment.User = null;
             return Ok(appointment);
 
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPut("{id}")]
+        public ActionResult Update(int id, Appointment appointment)
+        {
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+            var userEmail = claimsIdentity.FindFirst(ClaimTypes.Name).Value;
+
+            User user = appDbContext.User.FirstOrDefault(u => u.Email == userEmail);
+
+            var appointmentDb = appDbContext.Appointment.FirstOrDefault(a => a.Id == id && a.PeerId == user.Id);
+
+            if (appointmentDb == null)
+            {
+                return BadRequest(new { message = "This appointment was not for you" });
+            }
+
+            if (appointment.Status == Static.AptStatusAccepted)
+            {
+                appointmentDb.Status = Static.AptStatusAccepted;
+           
+            }
+            else if (appointment.Status == Static.AptStatusRejected)
+            {
+                appointmentDb.Status = Static.AptStatusRejected;
+            }
+            appDbContext.SaveChanges();
+            appointmentDb.User = null;
+            return Ok(appointmentDb);
+        }
     }
 }

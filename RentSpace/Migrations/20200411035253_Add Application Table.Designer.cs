@@ -2,15 +2,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RentSpace.Models;
 
 namespace RentSpace.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200411035253_Add Application Table")]
+    partial class AddApplicationTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,8 +39,8 @@ namespace RentSpace.Migrations
                     b.Property<int>("PeerId")
                         .HasColumnType("int");
 
-                    b.Property<int>("PeopleCount")
-                        .HasColumnType("int");
+                    b.Property<string>("PeopleCount")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("PropertyId")
                         .HasColumnType("int");

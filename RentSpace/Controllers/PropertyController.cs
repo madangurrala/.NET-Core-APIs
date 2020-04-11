@@ -30,7 +30,7 @@ namespace RentSpace.Controllers
         {
             List<Property> properties = new List<Property>();
             var propertiesFromDb = appDbContext.Property.Where(p => p.Status == Static.PropertyPosted).ToList();
-            
+
             if (propertiesFromDb.Count <= 0)
             {
                 return BadRequest(new { message = "There are no properties to display" });
@@ -84,7 +84,7 @@ namespace RentSpace.Controllers
         [HttpPut("{id}")]
         public ActionResult UpdateProperty(Property property, int id)
         {
-            ;
+            
             var claimsIdentity = (ClaimsIdentity)User.Identity;
             var userEmail = claimsIdentity.FindFirst(ClaimTypes.Name).Value;
 
@@ -97,7 +97,7 @@ namespace RentSpace.Controllers
 
             var propertyFromDb = appDbContext.Property.FirstOrDefault(p => p.Id == id && p.UserId == user.Id);
 
-            if(propertyFromDb == null)
+            if (propertyFromDb == null)
             {
                 return BadRequest(new { message = "The property doesn't exist/The given property is not posted by you" });
             }
@@ -105,7 +105,7 @@ namespace RentSpace.Controllers
             propertyFromDb.RegisterDate = propertyFromDb.RegisterDate;
             propertyFromDb.UserId = propertyFromDb.UserId;
             propertyFromDb.User = propertyFromDb.User;
-            if(property.Status == Static.PopertyRented)
+            if (property.Status == Static.PopertyRented)
             {
                 propertyFromDb.Status = Static.PopertyRented;
             }
@@ -126,6 +126,9 @@ namespace RentSpace.Controllers
             return Ok(propertyFromDb);
 
         }
+
+
+        
 
 
     }

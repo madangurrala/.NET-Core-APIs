@@ -23,5 +23,6 @@ namespace RentSpace.Models
         public DbSet<User> User { get; set; }
         public DbSet<Property> Property { get; set; }
         public DbSet<Appointment> Appointment { get; set; }
+        public DbSet<Application> Application { get; set; }
     }
 }

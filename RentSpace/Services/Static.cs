@@ -12,6 +12,7 @@ namespace RentSpace.Services
         public const string AptStatusRequested = "Requested";
         public const string AptStatusAccepted = "Accepted";
         public const string AptStatusRejected = "Rejected";
+        public const string Applied = "Applied";
     }
 
 }

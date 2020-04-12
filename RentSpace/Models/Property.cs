@@ -25,6 +25,7 @@ namespace RentSpace.Models
         public string Size { get; set; }
         public string Price { get; set; }
         public float Rate { get; set; }
+        public bool AppointmentRequested { get; set; }
 
         [ForeignKey("UserId")]
         public virtual User UserObject { get; set; }

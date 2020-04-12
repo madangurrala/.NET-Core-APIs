@@ -28,13 +28,34 @@ namespace RentSpace.Controllers
         [HttpGet]
         public ActionResult Get()
         {
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+            var userEmail = claimsIdentity.FindFirst(ClaimTypes.Name).Value;
+
+            User user = appDbContext.User.FirstOrDefault(u => u.Email == userEmail);
             List<Property> properties = new List<Property>();
             var propertiesFromDb = appDbContext.Property.Where(p => p.Status == Static.PropertyPosted).ToList();
+
 
             if (propertiesFromDb.Count <= 0)
             {
                 return BadRequest(new { message = "There are no properties to display" });
             }
+
+
+            foreach (var property in propertiesFromDb)
+            {
+                var propAptFromDb = appDbContext.Appointment
+                    .FirstOrDefault(a => a.UserId == user.Id && a.PropertyId == property.Id);
+
+                if (propAptFromDb != null)
+                {
+                    property.AppointmentRequested = true;
+                }
+                else
+                {
+                    property.AppointmentRequested = false;
+                }
+            } 
 
             return Ok(propertiesFromDb);
         }
@@ -43,12 +64,28 @@ namespace RentSpace.Controllers
         [HttpGet("{id}")]
         public ActionResult GetProperty(int id)
         {
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+            var userEmail = claimsIdentity.FindFirst(ClaimTypes.Name).Value;
+
+            User user = appDbContext.User.FirstOrDefault(u => u.Email == userEmail);
 
             Property property = appDbContext.Property.FirstOrDefault(p => p.Id == id);
 
             if (property == null)
             {
                 return BadRequest(new { message = "Please enter a valid property Id" });
+            }
+
+            var propertyAppointment = appDbContext.Appointment
+             .FirstOrDefault(a => a.UserId == user.Id && a.PropertyId == property.Id);
+
+           if(propertyAppointment != null)
+            {
+                property.AppointmentRequested = true;
+            }
+            else
+            {
+                property.AppointmentRequested = false;
             }
 
             return Ok(property);
@@ -58,7 +95,7 @@ namespace RentSpace.Controllers
         [HttpPost]
         public ActionResult Post(Property property)
         {
-            ;
+    
             var claimsIdentity = (ClaimsIdentity)User.Identity;
             var userEmail = claimsIdentity.FindFirst(ClaimTypes.Name).Value;
 
@@ -73,6 +110,7 @@ namespace RentSpace.Controllers
             property.UserId = user.Id;
             property.User = user.Name;
             property.Status = Static.PropertyPosted;
+            property.AppointmentRequested = false;
             appDbContext.Property.Add(property);
             appDbContext.SaveChanges();
             property.UserObject = null;
@@ -102,34 +140,15 @@ namespace RentSpace.Controllers
                 return BadRequest(new { message = "The property doesn't exist/The given property is not posted by you" });
             }
 
-            propertyFromDb.RegisterDate = propertyFromDb.RegisterDate;
-            propertyFromDb.UserId = propertyFromDb.UserId;
-            propertyFromDb.User = propertyFromDb.User;
             if (property.Status == Static.PopertyRented)
             {
                 propertyFromDb.Status = Static.PopertyRented;
             }
-            propertyFromDb.Status = propertyFromDb.Status;
-            propertyFromDb.BigImagePath = property.BigImagePath;
-            propertyFromDb.SmallImagePath = property.SmallImagePath;
-            propertyFromDb.ShortDescription = property.ShortDescription;
-            propertyFromDb.LongDescription = property.LongDescription;
-            propertyFromDb.Latitude = property.Latitude;
-            propertyFromDb.Longitude = property.Longitude;
-            propertyFromDb.Address = property.Address;
-            propertyFromDb.City = property.City;
-            propertyFromDb.Size = property.Size;
-            propertyFromDb.Price = property.Price;
-            propertyFromDb.Rate = property.Rate;
             appDbContext.SaveChanges();
             propertyFromDb.UserObject = null;
             return Ok(propertyFromDb);
 
         }
-
-
-        
-
 
     }
 }

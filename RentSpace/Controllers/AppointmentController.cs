@@ -147,6 +147,7 @@ namespace RentSpace.Controllers
                 return BadRequest(new { message = "You have already booked an appointment for this property" });
             }
 
+        
             appointment.PeerId = property.UserId;
             appointment.PeerTitle = property.User;
             appointment.RegisterDate = DateTimeOffset.Now.ToUnixTimeMilliseconds();
@@ -154,9 +155,10 @@ namespace RentSpace.Controllers
             appointment.Status = Static.AptStatusRequested;
             appDbContext.Add(appointment);
             appDbContext.SaveChanges();
+            property.AppointmentRequested = true;
             appointment.Property = null;
             appointment.User = null;
-            return Ok(appointment);
+            return Ok(property);
 
         }
 

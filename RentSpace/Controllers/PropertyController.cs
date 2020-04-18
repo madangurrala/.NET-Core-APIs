@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
+﻿using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RentSpace.Models;
 using RentSpace.Services;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 
 namespace RentSpace.Controllers
 {
@@ -19,9 +19,19 @@ namespace RentSpace.Controllers
     {
         private readonly AppDbContext appDbContext;
 
+        private ListResourcesResult houseImages = new ListResourcesResult();
+
+        private readonly static Account account = new Account(
+            "dljxzvztw",
+            "166915756747233",
+            "uIWzhMIh96Tf726utgVXhLJB6UQ");
+
+       private Cloudinary cloudinary = new Cloudinary(account);
+
         public PropertyController(AppDbContext appDbContext)
         {
             this.appDbContext = appDbContext;
+            houseImages = cloudinary.ListResourcesByTag("RentSpace");
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -55,8 +65,7 @@ namespace RentSpace.Controllers
                 {
                     property.AppointmentRequested = false;
                 }
-            } 
-
+            }
             return Ok(propertiesFromDb);
         }
 
@@ -79,7 +88,7 @@ namespace RentSpace.Controllers
             var propertyAppointment = appDbContext.Appointment
              .FirstOrDefault(a => a.UserId == user.Id && a.PropertyId == property.Id);
 
-           if(propertyAppointment != null)
+            if (propertyAppointment != null)
             {
                 property.AppointmentRequested = true;
             }
@@ -95,7 +104,7 @@ namespace RentSpace.Controllers
         [HttpPost]
         public ActionResult Post(Property property)
         {
-    
+
             var claimsIdentity = (ClaimsIdentity)User.Identity;
             var userEmail = claimsIdentity.FindFirst(ClaimTypes.Name).Value;
 
@@ -106,6 +115,17 @@ namespace RentSpace.Controllers
                 return BadRequest(new { message = "User is not logged in" });
             }
 
+            List<Resource> images = houseImages.Resources.ToList();
+            List<string> imageUrls = new List<string>();
+
+            foreach (var image in images)
+            {
+                imageUrls.Add(image.SecureUri.ToString());
+            }
+
+            Random randomImageUrl = new Random();
+            int index = randomImageUrl.Next(imageUrls.Count);
+            property.SmallImagePath = imageUrls[index];
             property.RegisterDate = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             property.UserId = user.Id;
             property.User = user.Name;
@@ -122,7 +142,7 @@ namespace RentSpace.Controllers
         [HttpPut("{id}")]
         public ActionResult UpdateProperty(Property property, int id)
         {
-            
+
             var claimsIdentity = (ClaimsIdentity)User.Identity;
             var userEmail = claimsIdentity.FindFirst(ClaimTypes.Name).Value;
 

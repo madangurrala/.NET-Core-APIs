@@ -33,19 +33,24 @@ namespace RentSpace.Controllers
             List<Appointment> appointmentList = new List<Appointment>();
             appointmentList = appDbContext.Appointment
                 .Where(u => u.UserId == user.Id && u.Status != Static.AptStatusRejected).ToList();
+
             var appointmentReqList = appDbContext.Appointment.Where(u => u.PeerId == user.Id).ToList();
 
-            foreach(var apt in appointmentReqList)
+            if (appointmentReqList.Count <= 0)
             {
-                appointmentList.Add(apt);
-            }            
-
-            if (appointmentList.Count <= 0)
-            {
-                return BadRequest(new { message = "You haven't booked any appointments" });
+                return BadRequest(new { message = "You don't have any appointments" });
             }
 
-            return Ok(appointmentList);
+            foreach(var appointment in appointmentReqList)
+            {
+                appointment.PeerId = appointment.UserId;
+                appointment.UserId = user.Id;
+
+                var peerTitle = appDbContext.User.FirstOrDefault(u => u.Id == appointment.PeerId);
+                appointment.PeerTitle = peerTitle.Name;
+            }
+
+            return Ok(appointmentReqList);
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]

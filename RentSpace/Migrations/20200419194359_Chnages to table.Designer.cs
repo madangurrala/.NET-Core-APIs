@@ -2,15 +2,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RentSpace.Models;
 
 namespace RentSpace.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200419194359_Chnages to table")]
+    partial class Chnagestotable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -131,9 +133,6 @@ namespace RentSpace.Migrations
 
                     b.Property<long>("RegisterDate")
                         .HasColumnType("bigint");
-
-                    b.Property<string>("ShortDescription")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Size")
                         .HasColumnType("nvarchar(max)");

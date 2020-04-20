@@ -57,6 +57,10 @@ namespace RentSpace.Controllers
         [HttpPost]
         public IActionResult Post(User user)
         {
+            if(user.Email.Equals(null) || user.Password.Equals(null))
+            {
+                return BadRequest(new { message = "Email or password can not be empty"});
+            }
 
             User userFromDb = appDb.User.FirstOrDefault(u => u.Email == user.Email);
             if (userFromDb != null)
